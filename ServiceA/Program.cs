@@ -1,24 +1,43 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Janacek;
 
 namespace ServiceA
 {
-    public class Program
+    class Program
     {
-        public static void Main(string[] args)
+        static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
-        }
+            Console.WriteLine("******************************************************************************");
+            Console.WriteLine("*                                                                            *");
+            Console.WriteLine("* MathService - microservice to calculate SUM and PRODUCT of two numbers     *");
+            Console.WriteLine("*                                                                            *");
+            Console.WriteLine("******************************************************************************");
+            Console.WriteLine("Running...");
+            Console.WriteLine();
+            Console.WriteLine("Received messages:");
+            var task = new JanacekConsumer()
+                       .Add("role:math,cmd:sum", MathService.OnSum)
+                       .Add("role:math,cmd:product", MathService.OnProduct)
+                       .Listen(new HttpChannelReceiver(
+                           options =>
+                           {
+                               options.ServiceAddress = "http://localhost:8101/";
+                           }))
+                       .Run();
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+            var direct = new MessageConsumer()
+                         .Add("role:math,cmd:product", MathService.OnProduct)
+                         .Listen(new HttpChannelReceiver(
+                             options =>
+                             {
+                                 options.ServiceAddress = "http://localhost:8102/";
+                             }))
+                         .Run();
+
+            task.GetAwaiter().GetResult();
+            direct.GetAwaiter().GetResult();
+
+            Console.WriteLine("Finished.");
+        }
     }
 }

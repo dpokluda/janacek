@@ -6,11 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Janacek.Core\Janacek.Core.csproj" />
+    <ProjectReference Include="..\Janacek.QueueChannel\Janacek.QueueChannel.csproj" />
   </ItemGroup>
 
 </Project>

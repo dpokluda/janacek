@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Janacek.Core\Janacek.Core.csproj" />
+    <ProjectReference Include="..\Janacek.QueueChannel\Janacek.QueueChannel.csproj" />
   </ItemGroup>
 
 </Project>

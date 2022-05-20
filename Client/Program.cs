@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using JanacekClient;
+using Janacek;
 
 namespace Client
 {
@@ -8,33 +7,70 @@ namespace Client
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("******************************************************************************");
+            Console.WriteLine("*                                                                            *");
+            Console.WriteLine("* Math client - sends simple messages to Math microservice                   *");
+            Console.WriteLine("*                                                                            *");
+            Console.WriteLine("******************************************************************************");
+            Console.WriteLine();
+
             Console.Write("Press [Enter] to start the app...");
             Console.ReadLine();
             
-            Console.WriteLine("Calling Math.Sum microservice to sum numbers 2.2 and 3.3: ");
-
-            var janacek = new JanacekProducer();
-            var result = janacek.Act(new Message(new Dictionary<string, object>
+            string answer = string.Empty;
+            do
             {
-                { "role", "math" },
-                { "cmd", "sum" },
-                { "left", 2.2 },
-                { "right", 3.3 }
-            })).Result;
+                Console.WriteLine("Sending request using Janacek service...");
 
-            if (result != null && result.ContainsKey("sum"))
-            {
-                var sum = result["sum"];
-                Console.WriteLine($"Result: {sum}");
+                var producer = new JanacekProducer();
+                var response = producer.ActAsync(
+                                           new Message
+                                           {
+                                               ["role"] = "math",
+                                               ["cmd"] = "sum",
+                                               ["left"] = 10,
+                                               ["right"] = 20,
+                                           })
+                                       .GetAwaiter()
+                                       .GetResult();
+                Console.WriteLine($"    SUM response: {response.Serialize()}");
+
+                response = producer.ActAsync(
+                                       new Message
+                                       {
+                                           ["role"] = "math",
+                                           ["cmd"] = "product",
+                                           ["left"] = 11,
+                                           ["right"] = 22,
+                                       })
+                                   .GetAwaiter()
+                                   .GetResult();
+                Console.WriteLine($"    PRODUCT response: {response.Serialize()}");
+
+                Console.WriteLine("Sending request directly...");
+
+                response = new MessageConsumer()
+                           .Client(
+                               new HttpChannelSender(
+                                   options => { options.ServiceAddress = "http://localhost:8102/"; }))
+                           .ActAsync(
+                               new Message
+                               {
+                                   ["role"] = "math",
+                                   ["cmd"] = "product",
+                                   ["left"] = 1.1,
+                                   ["right"] = 2.2,
+                               })
+                           .GetAwaiter()
+                           .GetResult();
+                Console.WriteLine($"    PRODUCT response: {response.Serialize()}");
+                Console.WriteLine();
+
+                Console.Write("Enter 'yes' to run the app again or anything else to quit the app (default: yes)...");
+                answer = Console.ReadLine();
+                Console.WriteLine();
             }
-            else
-            {
-                Console.WriteLine("Error occured!");
-            }
-
-            Console.Write("Press [Enter] to quit the app...");
-            Console.ReadLine();
-            
+            while (answer.Equals("yes", StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(answer));
         }
     }
 }
