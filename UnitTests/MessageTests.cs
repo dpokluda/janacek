@@ -1,3 +1,7 @@
+//-------------------------------------------------------------------------
+// Copyright (c) David Pokluda. All rights reserved.
+//-------------------------------------------------------------------------
+
 using System.Collections.Generic;
 using Janacek;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

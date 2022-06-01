@@ -1,4 +1,8 @@
-﻿using Janacek;
+﻿//-------------------------------------------------------------------------
+// Copyright (c) David Pokluda. All rights reserved.
+//-------------------------------------------------------------------------
+
+using Janacek;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UnitTests
@@ -33,126 +37,91 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void AllValuesMatch()
+        public void NumberMatch()
         {
             var pm = new PatternMatching<string>();
-
-            pm.Add("role:*", "true");
-
             var result = pm.Match(
-                new Message
-                    {
-                        { "role", "match" }
-                    });
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual("true", result);
-
-            result = pm.Match(
-                new Message
-                    {
-                        { "cmd", "match" }
-                    });
-
-            Assert.IsNull(result);
-        }
-
-        [TestMethod]
-        public void AllMatch()
-        {
-            var pm = new PatternMatching<string>();
-
-            pm.Add("*", "true");
-
-            var result = pm.Match(
-                new Message
-                    {
-                        { "role", "match" }
-                    });
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual("true", result);
-
-            result = pm.Match(
-                new Message
-                    {
-                        { "cmd", "match" }
-                    });
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual("true", result);
-
-            result = pm.Match(
-                Message.Empty);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual("true", result);
-        }
-
-        [TestMethod]
-        public void AllMatch2()
-        {
-            var pm = new PatternMatching<string>();
-
-            pm.Add("*", "1");
-            pm.Add("role:*", "2");
-
-            var result = pm.Match(
-                new Message
-                    {
-                        { "role", "match" }
-                    });
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual("2", result);
-
-            result = pm.Match(
-                new Message
-                    {
-                        { "cmd", "match" }
-                    });
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual("1", result);
-
-        }
-
-        [TestMethod]
-        public void AllMatch3()
-        {
-            var pm = new PatternMatching<string>();
-
-            pm.Add("*", "1");
-            pm.Add("role:match", "3");
-            // TODO: order
-            pm.Add("role:*", "2");
-
-            var result = pm.Match(
-                new Message
-                    {
-                        { "role", "match" }
-                    });
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual("3", result);
-
-            result = pm.Match(
-                new Message
-                    {
-                        { "role", "match2" }
-                    });
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual("2", result);
-
-            result = pm.Match(
                 new Message
                 {
-                    { "cmd", "match" }
+                    { "role", "match" },
+                    { "cmd", 2 }
                 });
 
+            Assert.IsNull(result);
+
+            pm.Add("role:match, cmd:2", "true");
+
+            result = pm.Match(
+                new Message
+                    {
+                        { "role", "match" },
+                        { "cmd", 2 }
+                    });
+
             Assert.IsNotNull(result);
-            Assert.AreEqual("1", result);
+            Assert.AreEqual("true", result);
+        }
+
+        [TestMethod]
+        public void AnyValueMatch()
+        {
+            var pm = new PatternMatching<string>();
+            var result = pm.Match(
+                new Message
+                {
+                    { "role", "match" },
+                    { "cmd", "sum" }
+                });
+
+            Assert.IsNull(result);
+
+            pm.Add("role:match, cmd:*", "true");
+
+            result = pm.Match(
+                new Message
+                    {
+                        { "role", "match" },
+                        { "cmd", 2 }
+                    });
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("true", result);
+
+            result = pm.Match(
+                new Message
+                    {
+                        { "role", "match" },
+                        { "cmd", "sum" }
+                    });
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("true", result);
+
+
+            result = pm.Match(
+                new Message
+                    {
+                        { "role", "match" },
+                        { "cmd", null }
+                    });
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("true", result);
+        }
+
+        [TestMethod]
+        public void SimpleFind()
+        {
+            var pm = new PatternMatching<string>();
+            var result = pm.Find("role:match,cmd:sum");
+            Assert.IsNull(result);
+
+            pm.Add("role:match, cmd:sum", "true");
+
+            result = pm.Find("role:match,cmd:sum");
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("true", result.Value);
         }
 
         [TestMethod]
